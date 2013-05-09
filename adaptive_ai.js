@@ -17,15 +17,12 @@ Random = function() {
 // --------------------------------------------------------------------------
 Gene = function (gene) {
 	if (gene === undefined) {
-		this._sequence = [];
+		this._sequence = [];		// array of float
 		this._mutationChance = ADAPTAI_DEFAULTCHANCE;
 		this._mutationRate = ADAPTAI_DEFAULTRATE;
 		this._sequenceLength = 0;
 	} else {
-		this._sequence = gene._sequence.slice();
-		this._mutationChance = gene._mutationChance;
-		this._mutationRate = gene._mutationRate;
-		this._sequenceLength = gene._sequenceLength;
+		this.copy(gene);
 	}
 }
 
@@ -113,14 +110,11 @@ Gene.prototype.mutateMutationFactors = function(chance, rate) {
 	return true;
 }
 
-Gene.prototype.set = function(gene) {
-	setLength(gene._sequenceLength);
-
+Gene.prototype.copy = function(gene) {
+	this._sequenceLength = gene._sequenceLength;
 	this._mutationChance = gene._mutationChance;
 	this._mutationRate = gene._mutationRate;
-
-	for (var i=0, l=this._sequenceLength; i<l; i++)
-		this._sequence[i] = gene._sequence[i];
+	this._sequence = gene._sequence.slice();
 
 	return this;
 }
@@ -157,10 +151,7 @@ Chromosome = function (chromosome) {
 		this._crossover = true;
 		this._crossoverMutationChance = ADAPTAI_DEFAULTCHANCE;
 	} else {
-		this._geneList = chromosome._geneList.slice(); 
-		this._geneCount = chromosome._geneCount;
-		this._crossover = chromosome._crossover;
-		this._crossoverMutationChance = chromosome._crossoverMutationChance;
+		this.copy(chromosome);
 	}
 }
 
@@ -173,7 +164,7 @@ Chromosome.prototype.setGene = function(idx, gene) {
 		return false;
 	}
 
-	this._geneList[idx] = gene.slice();
+	this._geneList[idx] = new Gene(gene);
 
 	return true;
 }
@@ -204,15 +195,14 @@ Chromosome.prototype.getGeneCount = function() {
 	return this._geneCount;
 }
 
-Chromosome.prototype.set = function(chrom) {
-	this.setGeneCount(chrom._geneCount);
-
+Chromosome.prototype.copy = function(chrom) {
+	this._geneCount = chrom._geneCount;
 	this._crossover = chrom._crossover;
 	this._crossoverMutationChance = chrom._crossoverMutationChance;
 
 	// Copy gene info:
 	for (var i=0; i<this._geneCount; i++) {
-		this._geneList.push(chrom._geneList[i].slice());
+		this._geneList.push(new Gene(chrom._geneList[i]));
 	} 
 
 	return this;
@@ -239,9 +229,9 @@ Chromosome.prototype.add = function(chrom) {
 		for (var i=0; i<this._geneCount; i++) {
 			// 50% chance of inheriting gene from either parent:
 			if (Random () < 0.5) {
-				Temp._geneList[i] = this._geneList[i].slice();
+				Temp._geneList[i] = new Gene(this._geneList[i]);
 			} else {
-				Temp._geneList[i] = chrom._geneList[i].slice();
+				Temp._geneList[i] = new Gene(chrom._geneList[i]);
 			}
 		} 
 	} else {
