@@ -338,5 +338,7 @@ Chromosome.prototype.load = function(fstream) {
 // --------------------------------------------------------------------------
 
 // --------------------------------------------------------------------------
-exports.Gene = Gene
-exports.Chromosome = Chromosome
+exports.GA={};
+exports.GA.Gene = Gene;
+exports.GA.Chromosome = Chromosome;
+
