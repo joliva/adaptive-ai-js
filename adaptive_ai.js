@@ -12,12 +12,21 @@ Random = function() {
 	return Math.random();
 }
 
+// --------------------------------------------------------------------------
+//	Gene
+// --------------------------------------------------------------------------
 Gene = function (gene) {
-		gene = gene || {};
-		this._sequence = gene._sequence || null,
-		this._mutationChance = gene._mutationChance || ADAPTAI_DEFAULTCHANCE,
-		this._mutationRate = gene._mutationRate || ADAPTAI_DEFAULTRATE,
-		this._sequenceLength = gene._sequenceLength || 0;
+	if (gene === undefined) {
+		this._sequence = [];
+		this._mutationChance = ADAPTAI_DEFAULTCHANCE;
+		this._mutationRate = ADAPTAI_DEFAULTRATE;
+		this._sequenceLength = 0;
+	} else {
+		this._sequence = gene._sequence.slice();
+		this._mutationChance = gene._mutationChance;
+		this._mutationRate = gene._mutationRate;
+		this._sequenceLength = gene._sequenceLength;
+	}
 }
 
 Gene.prototype.getSequence = function() {
@@ -138,4 +147,196 @@ Gene.prototype.save = function(fstream) {
 Gene.prototype.load = function(fstream) {
 }
 
+// --------------------------------------------------------------------------
+//	Chromosome
+// --------------------------------------------------------------------------
+Chromosome = function (chromosome) {
+	if (chromosome === undefined) {
+		this._geneList = [];
+		this._geneCount = 0;
+		this._crossover = true;
+		this._crossoverMutationChance = ADAPTAI_DEFAULTCHANCE;
+	} else {
+		this._geneList = chromosome._geneList.slice(); 
+		this._geneCount = chromosome._geneCount;
+		this._crossover = chromosome._crossover;
+		this._crossoverMutationChance = chromosome._crossoverMutationChance;
+	}
+}
+
+Chromosome.prototype.getGeneList = function() {
+	return this._geneList;
+}
+
+Chromosome.prototype.setGene = function(idx, gene) {
+	if (idx < 0 || idx >= this._geneCount) {
+		return false;
+	}
+
+	this._geneList[idx] = gene.slice();
+
+	return true;
+}
+
+Chromosome.prototype.getGene = function(idx) {
+	if (idx < 0 || idx >= this._geneCount) {
+		throw new RangeError('Invalid index into geneList');
+	}
+
+	return this._geneList[idx];
+}
+
+Chromosome.prototype.setGeneCount = function (length) {
+	if (length < 0)
+		return false;
+
+	this._geneList = [];
+	this._geneCount = length;
+
+	for (var i=0; i<length; i++) {
+		this._geneList.push(new Gene());
+	}
+
+	return true;
+}
+
+Chromosome.prototype.getGeneCount = function() {
+	return this._geneCount;
+}
+
+Chromosome.prototype.set = function(chrom) {
+	this.setGeneCount(chrom._geneCount);
+
+	this._crossover = chrom._crossover;
+	this._crossoverMutationChance = chrom._crossoverMutationChance;
+
+	// Copy gene info:
+	for (var i=0; i<this._geneCount; i++) {
+		this._geneList.push(chrom._geneList[i].slice());
+	} 
+
+	return this;
+}
+
+Chromosome.prototype.add = function(chrom) {
+	var Temp = new Chromosome();
+
+	if (this._geneCount != chrom._geneCount)
+		return Temp;
+
+	Temp.setGeneCount (this._geneCount);
+
+	if (this._crossover) {
+		// 50% chance of inheriting crossover trait & mutation rate from either parent:
+		if (Random () < 0.5) {
+			Temp._crossover = this._crossover;
+			Temp._crossoverMutationChance = this._crossoverMutationChance;
+		} else {
+			Temp._crossover = chrom._crossover;
+			Temp._crossoverMutationChance = chrom._crossoverMutationChance;
+		}
+
+		for (var i=0; i<this._geneCount; i++) {
+			// 50% chance of inheriting gene from either parent:
+			if (Random () < 0.5) {
+				Temp._geneList[i] = this._geneList[i].slice();
+			} else {
+				Temp._geneList[i] = chrom._geneList[i].slice();
+			}
+		} 
+	} else {
+		// 50% chance of inheriting crossover trait from either parent:
+		if (Random () < 0.5) {
+			Temp._crossover = this._crossover;
+		} else {
+			Temp._crossover = chrom._crossover;
+		}
+
+		// Mutation chance is numerical average of parents:
+		Temp._crossoverMutationChance = (this._crossoverMutationChance + chrom._crossoverMutationChance) / 2.0;
+
+		// Genes are numerical average of parents:
+		for (var i=0; i < this._geneCount; i++) {
+			Temp._geneList[i] = this._geneList[i].add(chrom._geneList[i]);
+		} 
+	}
+
+	return Temp;
+}
+
+Chromosome.prototype.setCrossoverState = function(state) {
+	// state is boolean
+   this._crossover = state;
+
+   return true;
+}
+
+Chromosome.prototype.getCrossoverState = function() {
+   return this._crossover;
+}
+
+Chromosome.prototype.setCrossoverMutationChance = function(chance) {
+   // Clamp mutation chance:
+   if (chance < 0.0) {
+      chance = 0.0;
+	} else if (chance > 1.0) {
+      chance = 1.0;
+	}
+
+   this._crossoverMutationChance = chance;
+
+   return true;
+}
+
+Chromosome.prototype.getCrossoverMutationChance = function() {
+	return this._crossoverMutationChance;
+}
+
+Chromosome.prototype.mutateChromosome = function() {
+	if (Random () <= this._crossoverMutationChance) {
+		if (this._crossover) {
+			this._crossover = false;
+		} else {
+			this.crossover = true;
+		}
+	}
+
+	return true;
+}
+
+Chromosome.prototype.mutateGenes = function() {
+	for (var i=0; i<this._geneCount; i++)
+		this._geneList[i].mutate();
+
+	return true;
+}
+
+Chromosome.prototype.mutate = function() {
+	return (this.mutateChromosome() && this.mutateGenes());
+}
+
+Chromosome.prototype.mutateMutationFactors = function(chance, rate) {
+	if (Random () <= chance) {
+		this.setCrossoverMutationChance(this._crossoverMutationChance + (Random() * 2.0 - 1.0) * rate);
+	}
+
+	for (var i=0; i<this._geneCount; i++) {
+		this._geneList[i].mutateMutationFactors(chance, rate);
+	}
+
+	return true;
+}
+
+Chromosome.prototype.save = function(fstream) {
+}
+
+Chromosome.prototype.load = function(fstream) {
+}
+
+// --------------------------------------------------------------------------
+//	Genome
+// --------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------
 exports.Gene = Gene
+exports.Chromosome = Chromosome
