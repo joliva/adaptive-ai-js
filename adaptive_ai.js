@@ -327,8 +327,53 @@ Chromosome.prototype.load = function(fstream) {
 //	Genome
 // --------------------------------------------------------------------------
 
+Genome = function (genome) {
+	if (genome === undefined) {
+		this._chromosomeList = NULL;
+		this._chromosomeCount = 0;
+	} else {
+		this.copy(genome);
+	}
+}
+
+Genome.prototype.setChromosome = function(idx, chrom) {
+	if (idx < 0 || idx >= this._chromosomeCount)
+		return false;
+
+	this._chromosomeList[idx] = new Chromosome(chrom);
+
+	return true;
+}
+
+Genome.prototype.getChromosome = function(idx) {
+	if (idx < 0 || idx >= this._chromosomeCount) {
+		throw new RangeError('Invalid index into chromosomeList');
+	}
+
+	return this._chromosomeList[idx];
+}
+
+Genome.prototype.setChromosomeCount = function(count) {
+	if (count < 0)
+		return false;
+
+	this._chromosomeList = [];
+	this._chromosomeCount = count;
+
+	for (var i=0; i<count; i++) {
+		this._chromosomeList.push(new Chromosome());
+	}
+
+	return true;	
+}
+
+Genome.prototype.getChromosomeCount = function() {
+	return this._chromosomeCount;
+}
+
 // --------------------------------------------------------------------------
 exports.GA={};
 exports.GA.Gene = Gene;
 exports.GA.Chromosome = Chromosome;
+exports.GA.Genome = Genome;
 
