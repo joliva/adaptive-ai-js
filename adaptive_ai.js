@@ -200,6 +200,8 @@ Chromosome.prototype.copy = function(chrom) {
 	this._crossover = chrom._crossover;
 	this._crossoverMutationChance = chrom._crossoverMutationChance;
 
+	this._geneList = [];
+
 	// Copy gene info:
 	for (var i=0; i<this._geneCount; i++) {
 		this._geneList.push(new Gene(chrom._geneList[i]));
@@ -256,26 +258,26 @@ Chromosome.prototype.add = function(chrom) {
 
 Chromosome.prototype.setCrossoverState = function(state) {
 	// state is boolean
-   this._crossover = state;
+	this._crossover = state;
 
-   return true;
+	return true;
 }
 
 Chromosome.prototype.getCrossoverState = function() {
-   return this._crossover;
+	return this._crossover;
 }
 
 Chromosome.prototype.setCrossoverMutationChance = function(chance) {
-   // Clamp mutation chance:
-   if (chance < 0.0) {
-      chance = 0.0;
+	// Clamp mutation chance:
+	if (chance < 0.0) {
+		chance = 0.0;
 	} else if (chance > 1.0) {
-      chance = 1.0;
+		chance = 1.0;
 	}
 
-   this._crossoverMutationChance = chance;
+	this._crossoverMutationChance = chance;
 
-   return true;
+	return true;
 }
 
 Chromosome.prototype.getCrossoverMutationChance = function() {
@@ -329,7 +331,7 @@ Chromosome.prototype.load = function(fstream) {
 
 Genome = function (genome) {
 	if (genome === undefined) {
-		this._chromosomeList = NULL;
+		this._chromosomeList = [];
 		this._chromosomeCount = 0;
 	} else {
 		this.copy(genome);
@@ -369,6 +371,56 @@ Genome.prototype.setChromosomeCount = function(count) {
 
 Genome.prototype.getChromosomeCount = function() {
 	return this._chromosomeCount;
+}
+
+Genome.prototype.copy = function(genome) {
+	this.setChromosomeCount(genome._chromosomeCount);
+
+	this._chromosomeList = [];
+
+	for (var i=0; i<this._chromosomeCount; i++) {
+		this._chromosomeList.push(new Chromosome(genome._chromosomeList[i]));
+	}
+
+	return this;
+}
+
+Genome.prototype.add = function(genome) {
+	var Temp = new Genome();
+
+	if (this._chromosomeCount !== genome._chromosomeCount) {
+		throw new RangeError('Attempt to add genomes with differing chromosome counts.');
+	}
+
+	Temp.setChromosomeCount(this._chromosomeCount);
+
+	for (var i=0; i<this._chromosomeCount; i++) {
+		Temp._chromosomeList[i] = this._chromosomeList[i].add(genome._chromosomeList[i]);
+	}
+
+	return Temp;
+}
+
+Genome.prototype.mutate = function() {
+	for (var i=0; i<this._chromosomeCount; i++) {
+		this._chromosomeList[i].mutate();
+	}
+
+	return true;
+}
+
+Genome.prototype.mutateMutationFactors = function(chance, rate) {
+	for (var i=0; i<this._chromosomeCount; i++) {
+		this._chromosomeList[i].mutateMutationFactors(chance, rate);
+	}
+
+	return true;
+}
+
+Genome.prototype.save = function(fstream) {
+}
+
+Genome.prototype.load = function(fstream) {
 }
 
 // --------------------------------------------------------------------------
