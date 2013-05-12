@@ -13,7 +13,7 @@ Random = function() {
 }
 
 // --------------------------------------------------------------------------
-//	Gene
+//	Genetic Algorithm: Gene
 // --------------------------------------------------------------------------
 Gene = function (gene) {
 	if (gene === undefined) {
@@ -142,7 +142,7 @@ Gene.prototype.load = function(fstream) {
 }
 
 // --------------------------------------------------------------------------
-//	Chromosome
+//	Genetic Algorithm: Chromosome
 // --------------------------------------------------------------------------
 Chromosome = function (chromosome) {
 	if (chromosome === undefined) {
@@ -326,7 +326,7 @@ Chromosome.prototype.load = function(fstream) {
 }
 
 // --------------------------------------------------------------------------
-//	Genome
+//	Genetic Algorithm: Genome
 // --------------------------------------------------------------------------
 
 Genome = function (genome) {
@@ -424,8 +424,60 @@ Genome.prototype.load = function(fstream) {
 }
 
 // --------------------------------------------------------------------------
+//	Organism
+// --------------------------------------------------------------------------
+
+Organism = function(organism) {
+	if (organism === undefined) {
+		this._states = [];
+		this._sensors = [];
+		this._stateCount = 0;
+		this._sensorCount = 0;
+		this._currentState = 0;
+	} else {
+		this.copy(organism);
+	}
+}
+
+// --------------------------------------------------------------------------
+//	Organism: State
+// --------------------------------------------------------------------------
+
+Organism.State = function(state) {
+	if (state === undefined) {
+		this._name = 'NOT_SET';
+	} else {
+		this.copy(state);
+	}
+}
+
+Organism.State.prototype.setName = function(newName) {
+	this._name = newName;
+	return true;
+}
+
+Organism.State.prototype.copy = function(state) {
+	this._name = state.name;
+	return this;
+}
+
+Organism.State.prototype.save = function(fstream) {
+}
+
+Organism.State.prototype.load = function(fstream) {
+}
+
+// --------------------------------------------------------------------------
+//	Organism: Sensor
+// --------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------
 exports.GA={};
 exports.GA.Gene = Gene;
 exports.GA.Chromosome = Chromosome;
 exports.GA.Genome = Genome;
+exports.Org={};
+exports.Org.Organism = Organism;
+exports.Org.Organism.State = Organism.State;
+exports.Org.Organism.Sensor = Organism.Sensor;
 
