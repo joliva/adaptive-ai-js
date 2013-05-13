@@ -522,21 +522,21 @@ Organism.prototype.setStateCount = function(count) {
 	return this.setSensorCount(this._sensorCount);
 }
 
-/*
-int Organism::GetStateCount () const {
-	return StateCount;
+Organism.prototype.getStateCount = function() {
+	return this._stateCount;
 }
 
-int Organism::GetStateIndex (std::string Name) const {
-	for (int i = 0; i < StateCount; i++) {
-		if (Name == States [i].Name) {
+Organism.prototype.getStateIndex = function(name) {
+	for (var i=0, l=this.stateCount; i<l; i++) {
+		if (name === this._states[i]._name) {
 			return i;
 		}
 	}
 
-	return -1;
+	return null;
 }
 
+/*
 float Organism::GetSensorValue (std::string Name) const {
 	for (int i = 0; i < SensorCount; i++) {
 		if (Name == Sensors [i].Name)
