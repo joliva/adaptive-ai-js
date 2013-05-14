@@ -536,41 +536,61 @@ Organism.prototype.getStateIndex = function(name) {
 	return null;
 }
 
-Organism.prototype.getSensorValue = function(name) {
-	for (var i=0, l=this._sensorCount; i<l; i++) {
-		if (name === this._sensors[i]._name)
-			return this._sensors[i]._Value;
+Organism.prototype.getSensorValue = function(arg) {
+	// inspect argument type to infer argument semantics
+	var argtype = typeof arg;
+
+	if (argtype === 'string') {
+		// arg is inferred to be 'name'
+		var name = arg;
+
+		for (var i=0, l=this._sensorCount; i<l; i++) {
+			if (name === this._sensors[i]._name)
+				return this._sensors[i]._value;
+		}
+	} else if (argtype === 'number') {
+		// arg is inferred to be 'index'
+		var idx = arg;
+
+		if (idx < 0 || idx >= this._sensorCount)
+			return 0.0;
+
+		return this._sensors[idx]._value;
 	}
 
 	return 0.0;
 }
 
-Organism.prototype.getSensorValue = function(idx) {
-	if (idx < 0 || idx >= this._sensorCount)
-		return 0.0;
+Organism.prototype.setSensorValue = function(arg, value) {
+	// inspect argument type to infer argument semantics
+	var argtype = typeof arg;
 
-	return this._sensors[idx]._value;
-}
+	if (argtype === 'string') {
+		// arg is inferred to be 'name'
+		var name = arg;
 
-Organism.prototype.setSensorValue = function(name, value) {
-	for (var i=0, l=this._sensorCount; i<l; i++) {
-		if (name === this._sensors[i]._name) {
-			this._sensors[i].setValue(value);
-
-			return true;
+		for (var i=0, l=this._sensorCount; i<l; i++) {
+			if (name === this._sensors[i]._name) {
+				this._sensors[i].setValue(value);
+	
+				return true;
+			}
 		}
+
+		return false;
+	} else if (argtype === 'number') {
+		// arg is inferred to be 'index'
+		var idx = arg;
+
+		if (idx < 0 || idx >= this._sensorCount)
+			return false;
+
+		this._sensors[idx].setValue(value);
+
+		return true;
 	}
 
 	return false;
-}
-
-Organism.prototype.setSensorValue = function(idx, value) {
-	if (idx < 0 || idx >= this._sensorCount)
-		return false;
-
-	this._sensors[idx].setValue(value);
-
-	return true;
 }
 
 Organism.prototype.getSensorName = function(idx) const {
@@ -648,25 +668,36 @@ Organism.prototype.getCurrentState = function() {
 	return this._currentState;
 }
 
-Organism.prototype.setCurrentState = function(name) {
-	for (var i=0, l=this._stateCount; i<l; i++) {
-		if (this._states[i]._name === name) {
-			this._currentState = i;
+Organism.prototype.setCurrentState = function(arg) {
+	// inspect argument type to infer argument semantics
+	var argtype = typeof arg;
 
-			return true;
+	if (argtype === 'string') {
+		// arg is inferred to be 'name'
+		var name = arg;
+
+		for (var i=0, l=this._stateCount; i<l; i++) {
+			if (this._states[i]._name === name) {
+				this._currentState = i;
+
+				return true;
+			}
 		}
+
+		return false;
+	} else if (argtype === 'number') {
+		// arg is inferred to be 'index'
+		var idx = arg;
+
+		if (idx < 0 || idx >= this._stateCount)
+			return false;
+
+		this._currentState = idx;
+
+		return true;
 	}
 
 	return false;
-}
-
-Organism.prototype.setCurrentState = function(idx) {
-	if (idx < 0 || idx >= this._stateCount)
-		return false;
-
-	this._currentState = idx;
-
-	return true;
 }
 
 Organism.prototype.mutate = function() {
