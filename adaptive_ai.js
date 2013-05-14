@@ -536,27 +536,26 @@ Organism.prototype.getStateIndex = function(name) {
 	return null;
 }
 
-/*
-float Organism::GetSensorValue (std::string Name) const {
-	for (int i = 0; i < SensorCount; i++) {
-		if (Name == Sensors [i].Name)
-			return Sensors [i].Value;
+Organism.prototype.getSensorValue = function(name) {
+	for (var i=0, l=this._sensorCount; i<l; i++) {
+		if (name === this._sensors[i]._name)
+			return this._sensors[i]._Value;
 	}
 
-	return 0.0F;
+	return 0.0;
 }
 
-float Organism::GetSensorValue (int Index) const {
-	if (Index < 0 || Index >= SensorCount)
-		return 0.0F;
+Organism.prototype.getSensorValue = function(idx) {
+	if (idx < 0 || idx >= this._sensorCount)
+		return 0.0;
 
-	return Sensors [Index].Value;
+	return this._sensors[idx]._value;
 }
 
-bool Organism::SetSensorValue (std::string Name, float Value) {
-	for (int i = 0; i < SensorCount; i++) {
-		if (Name == Sensors [i].Name) {
-			Sensors [i].SetValue (Value);
+Organism.prototype.setSensorValue = function(name, value) {
+	for (var i=0, l=this._sensorCount; i<l; i++) {
+		if (name === this._sensors[i]._name) {
+			this._sensors[i].setValue(value);
 
 			return true;
 		}
@@ -565,112 +564,94 @@ bool Organism::SetSensorValue (std::string Name, float Value) {
 	return false;
 }
 
-bool Organism::SetSensorValue (int Index, float Value) {
-	if (Index < 0 || Index >= SensorCount)
+Organism.prototype.setSensorValue = function(idx, value) {
+	if (idx < 0 || idx >= this._sensorCount)
 		return false;
 
-	Sensors [Index].SetValue (Value);
+	this._sensors[idx].setValue(value);
 
 	return true;
 }
 
-std::string Organism::GetSensorName (int Index) const {
-	if (Index < 0 || Index >= SensorCount)
-		return NULL;
+Organism.prototype.getSensorName = function(idx) const {
+	if (idx < 0 || idx >= this._sensorCount)
+		return null;
 
-	return Sensors [Index].Name;
+	return this._sensors[idx]._name;
 }
 
-bool Organism::GetSensorName (int Index, std::string* Name) const {
-	if (Index < 0 || Index >= SensorCount)
+Organism.prototype.setSensorName = function(idx, name) {
+	if (idx < 0 || idx >= this._sensorCount)
 		return false;
 
-	*Name = Sensors [Index].Name;
+	this._sensors[idx].setName(name);
 
 	return true;
 }
 
-bool Organism::SetSensorName (int Index, std::string Name) {
-	if (Index < 0 || Index >= SensorCount)
-		return false;
-
-	Sensors [Index].SetName (Name);
-
-	return true;
-}
-
-bool Organism::SetSensorCount (int Count) {
-
-	if (Count < 0) {
+Organism.prototype.setSensorCount = function(count) {
+	if (count < 0) {
 		return false;
 	}
 	
-	SensorCount = Count;
+	this._sensorCount = count;
+	this._sensors= [];
 
-	if (Count > 0) {
-		if (Sensors == NULL) {
-			Sensors = new Sensor [SensorCount];
-		}
+	for (var i=0, l=this._sensorCount; i<l; i++) {
+		this._sensors.push(new Organism.Sensor());
 	}
 
-	for (int i = 0; i < StateCount; i++) {
-		Chromosome &Chrom = OrgGenome.GetChromosome (i);
+	for (var i=0, l=this._stateCount; i<l; i++) {
+		var chrom = this._orgGenome.getChromosome(i);
 
-		for (int j = 0; j < StateCount; j++) {
-			Gene &G = Chrom.GetGene (j);
+		for (var j=0, ll=this._stateCount; j<ll; j++) {
+			var gene = chrom.getGene(j);
 
-			// Allocate enough room for each coefficient
-			// (base + sensor coeff's):
-			G.SetLength (1 + SensorCount);
+			// Allocate enough room for each coefficient (base + sensor coeff's):
+			gene.setLength(1 + this._sensorCount);
 		}
 	}
 
 	return true;
 }
 
-int Organism::GetSensorCount () const {
-	return SensorCount;
+Organism.prototype.getSensorCount = function() {
+	return this._sensorCount;
 }
 
-int Organism::GetSensorIndex (std::string Name) const {
-	for (int i = 0; i < SensorCount; i++) {
-		if (Name == Sensors [i].Name) {
+Organism.prototype.getSensorIndex = function(name) {
+	for (var i=0, l=this._sensorCount; i<; i++) {
+		if (name === this._sensors[i]._name) {
 			return i;
 		}
 	}
 
-	return -1;
+	return null;
 }
 
-bool Organism::SetTransition (int Index1, int Index2, float BaseChance, const float *SensorCoeff) {
-	if (Index1 < 0 || Index1 >= StateCount || Index2 < 0 || Index2 >= StateCount)
+Organism.prototype.setTransition  = function(idx1, idx2, baseChance, sensorCoeff) {
+	if (idx1 < 0 || idx1 >= this._stateCount || idx2 < 0 || idx2 >= this._stateCount)
 		return false;
 
-	Chromosome &Chrom = OrgGenome.GetChromosome (Index1);
+	var chrom = this._orgGenome.getChromosome(idx1);
+	var gene = chrom.getGene(idx2);
 
-	Gene &G = Chrom.GetGene (Index2);
+	gene.setElement(0, baseChance);
 
-	G.SetElement (0, BaseChance);
-
-	for (int i = 0; i < SensorCount; i++)
-		G.SetElement (1 + i, SensorCoeff [i]);
+	for (var i=0, l=this._sensorCount; i<l; i++)
+		gene.setElement(1 + i, sensorCoeff[i]);
 
 	return true;
 }
 
-int Organism::GetCurrentState () const {
-	return CurrentState;
+Organism.prototype.getCurrentState = function() {
+	return this._currentState;
 }
 
-bool Organism::GetCurrentState (std::string* Name) const {
-	*Name = States [CurrentState].Name;
-	return true;
-}
-
-bool Organism::SetCurrentState (std::string Name) {
-	for (int i = 0; i < StateCount; i++) {
-		if (States [i].Name == Name) {
-			CurrentState = i;
+Organism.prototype.setCurrentState = function(name) {
+	for (var i=0, l=this._stateCount; i<l; i++) {
+		if (this._states[i]._name === name) {
+			this._currentState = i;
 
 			return true;
 		}
@@ -679,150 +660,82 @@ bool Organism::SetCurrentState (std::string Name) {
 	return false;
 }
 
-bool Organism::SetCurrentState (int Index) {
-	if (Index < 0 || Index >= StateCount)
+Organism.prototype.setCurrentState = function(idx) {
+	if (idx < 0 || idx >= this._stateCount)
 		return false;
 
-	CurrentState = Index;
+	this._currentState = idx;
 
 	return true;
 }
 
-bool Organism::Mutate () {
-	return OrgGenome.Mutate ();
+Organism.prototype.mutate = function() {
+	return this._orgGenome.mutate();
 }
 
-bool Organism::MutateMutationFactors (float Chance, float Rate) {
-	return OrgGenome.MutateMutationFactors (Chance, Rate);
+Organism.prototype.mutateMutationFactors = function(chance, rate) {
+	return this._orgGenome.mutateMutationFactors(chance, rate);
 }
 
-bool Organism::UpdateState () {
-	float *Prob = new float [StateCount];
+Organism.prototype.UpdateState = function() {
+	var prob = [];
 
-	float TotalProb = 0.0F;
+	for (var i=0, l=this._stateCount; i<l; i++) {
+		prob.push(0.0);	
+	}
 
-	int i;
+	var totalProb = 0.0;
 
-	Chromosome &Chrom = OrgGenome.GetChromosome (CurrentState);
+	var chrom = this._orgGenome.getChromosome(this._currentState);
 
-	for (i = 0; i < StateCount; i++) {
-		Gene &G = Chrom.GetGene (i);
+	for (var i=0, l=this._stateCount; i<l; i++) {
+		var gene = chrom.getGene(i);
 
 		// Base chance:
-		Prob [i]  = G.GetElement (0);
+		prob[i] = gene.getElement(0);
 
-		TotalProb  += Prob [i];
+		totalProb += prob[i];
 
 		// Sensor coefficients:
-		for (int j = 1; j <= SensorCount; j++) {
-			float p = G.GetElement (j) * Sensors [j - 1].Value;
+		for (var j=1, ll=this._sensorCount; j<=ll; j++) {
+			var p = gene.getElement(j) * this._sensors[j - 1]._value;
 			
-			Prob [i] += p;
-
-			TotalProb  += p;
+			prob[i] += p;
+			totalProb += p;
 		}
 	}
 
 	// Normalize probability:
-	for (i = 0; i < StateCount; i++)
-		Prob [i] /= TotalProb;
+	for (var i=0, l=this._stateCount; i<l; i++)
+		prob[i] /= totalProb;
 
 	// cdf - cumulative distribution function
-	for (i = StateCount - 1; i >= 0; i--) {
-		for (int j = 0; j < i; j++)
-			Prob [i] += Prob [j];
+	for (var i=this._stateCount - 1; i >= 0; i--) {
+		for (var j=0; j<i; j++)
+			prob[i] += prob[j];
 	}
 
-	float Choice = Random ();
+	var choice = Random();
 
-	int NextState = CurrentState;
+	var nextState = this._currentState;
 
-	for (i = 0; i < StateCount; i++) {
-		if (Choice <= Prob [i]) {
-			NextState = i;
-
+	for (var i=0, l=this._stateCount; i<l; i++) {
+		if (choice <= prob[i]) {
+			nextState = i;
 			break;
 		}
 	}
 
-	CurrentState = NextState;
-
-	delete [] Prob;
+	this._currentState = nextState;
 
 	return true;
 }
 
-bool Organism::Save (std::fstream &File) const {
-	// File format:
-	//			 StateCount			sizeof (int)
-	//			 SensorCount		  sizeof (int)
-	//			 CurrentState		 sizeof (int)
-	//			 States				 sizeof (State) * StateCount
-	//			 Sensors				sizeof (Sensor) * SensorCount
-	//			 OrgGenome			 varies
-	File.write ((const char *) &StateCount,	sizeof (int));
-	File.write ((const char *) &SensorCount,  sizeof (int));
-	File.write ((const char *) &CurrentState, sizeof (int));
-	
-	// Save states:
-	int i;
-	for (i = 0; i < StateCount; i++) {
-		if (!States [i].Save (File))
-			return false;
-	}
-
-	// Save sensors:
-	for (i = 0; i < SensorCount; i++) {
-		if (!Sensors [i].Save (File))
-			return false;
-	}
-
-	// Save the genome:
-	if (!OrgGenome.Save (File))
-		return false;
-
-	if (!File.good ())
-		return false;
-
-	return true;
+Organism.prototype.save = function(fstream) {
 }
 
-bool Organism::Load (std::fstream &File) {
-	File.read ((char *) &StateCount,	sizeof (int));
-	File.read ((char *) &SensorCount,  sizeof (int));
-	File.read ((char *) &CurrentState, sizeof (int));
-	
-	// Allocate memory for states:
-	delete [] States;
-	States = new State [StateCount];
-
-	// Load states:
-	int i;
-	for (i = 0; i < StateCount; i++) {
-		if (!States [i].Load (File))
-			return false;
-	}
-
-	// Allocate memory for the sensors:
-	delete [] Sensors;
-	Sensors = new Sensor [SensorCount];
-
-	// Load sensors:
-	for (i = 0; i < SensorCount; i++) {
-		if (!Sensors [i].Load (File))
-			return false;
-	}
-
-	// Load the genome:
-	if (!OrgGenome.Load (File))
-		return false;
-
-	if (!File.good ())
-		return false;
-
-	return true;
+Organism.prototype.load = function(fstream) {
 }
-*/
 
 // --------------------------------------------------------------------------
 //	Organism: State
