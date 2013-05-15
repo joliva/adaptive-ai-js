@@ -5,8 +5,8 @@
 	Purpose:			Implementation of Adaptive AI FSM as a Common.JS module.
 *****************************************************************************/
 
-var ADAPTAI_DEFAULTCHANCE = 0.001;
-var ADAPTAI_DEFAULTRATE = 0.1;
+var ADAPTAI_DEFAULT_CHANCE = 0.001;
+var ADAPTAI_DEFAULT_RATE = 0.1;
 
 Random = function() {
 	return Math.random();
@@ -18,8 +18,8 @@ Random = function() {
 Gene = function (gene) {
 	if (gene === undefined) {
 		this._sequence = [];		// array of float
-		this._mutationChance = ADAPTAI_DEFAULTCHANCE;
-		this._mutationRate = ADAPTAI_DEFAULTRATE;
+		this._mutationChance = ADAPTAI_DEFAULT_CHANCE;
+		this._mutationRate = ADAPTAI_DEFAULT_RATE;
 		this._sequenceLength = 0;
 	} else {
 		this.copy(gene);
@@ -149,7 +149,7 @@ Chromosome = function (chromosome) {
 		this._geneList = [];
 		this._geneCount = 0;
 		this._crossover = true;
-		this._crossoverMutationChance = ADAPTAI_DEFAULTCHANCE;
+		this._crossoverMutationChance = ADAPTAI_DEFAULT_CHANCE;
 	} else {
 		this.copy(chromosome);
 	}
@@ -505,7 +505,7 @@ Organism.prototype.setStateCount = function(count) {
 	this._states=[];
 
 	for (var i=0, l=this._stateCount; i<l; i++) {
-		this.states.push(new Organism.State());
+		this._states.push(new Organism.State());
 	}
 
 	if (this._orgGenome.setChromosomeCount(this._stateCount) === false) {
