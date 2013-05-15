@@ -450,11 +450,11 @@ Organism.prototype.copy = function(organism) {
 	Sensors = new Sensor [SensorCount];
 
 	for (var i=0, l=this._stateCount; i<l; i++) {
-		this._states.push(new Organism.State(organism._states[i]);
+		this._states.push(new Organism.State(organism._states[i]));
 	}
 
 	for (var i=0, l=this._sensorCount; i<l; i++) {
-		this._sensors.push(new Organism.Sensor(organism._sensors[i]);
+		this._sensors.push(new Organism.Sensor(organism._sensors[i]));
 	}
 
 	this._orgGenome.copy(organism._orgGenome);
@@ -593,7 +593,7 @@ Organism.prototype.setSensorValue = function(arg, value) {
 	return false;
 }
 
-Organism.prototype.getSensorName = function(idx) const {
+Organism.prototype.getSensorName = function(idx) {
 	if (idx < 0 || idx >= this._sensorCount)
 		return null;
 
@@ -640,7 +640,7 @@ Organism.prototype.getSensorCount = function() {
 }
 
 Organism.prototype.getSensorIndex = function(name) {
-	for (var i=0, l=this._sensorCount; i<; i++) {
+	for (var i=0, l=this._sensorCount; i<l; i++) {
 		if (name === this._sensors[i]._name) {
 			return i;
 		}
