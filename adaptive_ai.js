@@ -5,11 +5,17 @@
 	Purpose:			Implementation of Adaptive AI FSM as a Common.JS module.
 *****************************************************************************/
 
+// constants
 var ADAPTAI_DEFAULT_CHANCE = 0.001;
 var ADAPTAI_DEFAULT_RATE = 0.1;
 
 Random = function() {
 	return Math.random();
+}
+
+GA = {
+	defaultChance: ADAPTAI_DEFAULT_CHANCE,
+	defaultRate: ADAPTAI_DEFAULT_RATE
 }
 
 // --------------------------------------------------------------------------
@@ -18,8 +24,8 @@ Random = function() {
 Gene = function (gene) {
 	if (gene === undefined) {
 		this._sequence = [];		// array of float
-		this._mutationChance = ADAPTAI_DEFAULT_CHANCE;
-		this._mutationRate = ADAPTAI_DEFAULT_RATE;
+		this._mutationChance = GA.defaultChance;
+		this._mutationRate = GA.defaultRate;
 		this._sequenceLength = 0;
 	} else {
 		this.copy(gene);
@@ -203,7 +209,7 @@ Chromosome.prototype.copy = function(chrom) {
 	this._geneList = [];
 
 	// Copy gene info:
-	for (var i=0; i<this._geneCount; i++) {
+	for (var i=0, l=this._geneCount; i<l; i++) {
 		this._geneList.push(new Gene(chrom._geneList[i]));
 	} 
 
@@ -228,7 +234,7 @@ Chromosome.prototype.add = function(chrom) {
 			Temp._crossoverMutationChance = chrom._crossoverMutationChance;
 		}
 
-		for (var i=0; i<this._geneCount; i++) {
+		for (var i=0, l=this._geneCount; i<l; i++) {
 			// 50% chance of inheriting gene from either parent:
 			if (Random () < 0.5) {
 				Temp._geneList[i] = new Gene(this._geneList[i]);
@@ -297,7 +303,7 @@ Chromosome.prototype.mutateChromosome = function() {
 }
 
 Chromosome.prototype.mutateGenes = function() {
-	for (var i=0; i<this._geneCount; i++)
+	for (var i=0, l=this._geneCount; i<l; i++)
 		this._geneList[i].mutate();
 
 	return true;
@@ -307,12 +313,22 @@ Chromosome.prototype.mutate = function() {
 	return (this.mutateChromosome() && this.mutateGenes());
 }
 
+Chromosome.prototype.setMutationFactors = function(chance, rate) {
+	for (var i=0, l=this._geneCount; i<l; i++) {
+		var gene = this._geneList[i];
+		gene.setMutationChance(chance);
+		gene.setMutationRate(rate);
+	}
+
+	return true;
+}
+
 Chromosome.prototype.mutateMutationFactors = function(chance, rate) {
 	if (Random () <= chance) {
 		this.setCrossoverMutationChance(this._crossoverMutationChance + (Random() * 2.0 - 1.0) * rate);
 	}
 
-	for (var i=0; i<this._geneCount; i++) {
+	for (var i=0, l=this._geneCount; i<l; i++) {
 		this._geneList[i].mutateMutationFactors(chance, rate);
 	}
 
@@ -378,7 +394,7 @@ Genome.prototype.copy = function(genome) {
 
 	this._chromosomeList = [];
 
-	for (var i=0; i<this._chromosomeCount; i++) {
+	for (var i=0, l=this._chromosomeCount; i<l; i++) {
 		this._chromosomeList.push(new Chromosome(genome._chromosomeList[i]));
 	}
 
@@ -394,7 +410,7 @@ Genome.prototype.add = function(genome) {
 
 	Temp.setChromosomeCount(this._chromosomeCount);
 
-	for (var i=0; i<this._chromosomeCount; i++) {
+	for (var i=0, l=this._chromosomeCount; i<l; i++) {
 		Temp._chromosomeList[i] = this._chromosomeList[i].add(genome._chromosomeList[i]);
 	}
 
@@ -402,15 +418,26 @@ Genome.prototype.add = function(genome) {
 }
 
 Genome.prototype.mutate = function() {
-	for (var i=0; i<this._chromosomeCount; i++) {
+	for (var i=0, l=this._chromosomeCount; i<l; i++) {
 		this._chromosomeList[i].mutate();
 	}
 
 	return true;
 }
 
+Genome.prototype.setMutationFactors = function(chance, rate) {
+	for (var i=0, l=this._chromosomeCount; i<l; i++) {
+		this._chromosomeList[i].setMutationFactors(chance, rate);
+	}
+
+	GA.defaultChance = chance;
+	GA.defaultRate = rate;
+
+	return true;
+}
+
 Genome.prototype.mutateMutationFactors = function(chance, rate) {
-	for (var i=0; i<this._chromosomeCount; i++) {
+	for (var i=0, l=this._chromosomeCount; i<l; i++) {
 		this._chromosomeList[i].mutateMutationFactors(chance, rate);
 	}
 
@@ -490,7 +517,7 @@ Organism.prototype.setStateName = function(idx, name) {
 	if (idx < 0 || idx >= this._stateCount)
 		return false;
 
-	this._states[idx]._setName(name);
+	this._states[idx].setName(name);
 
 	return true;
 }
@@ -704,11 +731,15 @@ Organism.prototype.mutate = function() {
 	return this._orgGenome.mutate();
 }
 
+Organism.prototype.setMutationFactors = function(chance, rate) {
+	return this._orgGenome.setMutationFactors(chance, rate);
+}
+
 Organism.prototype.mutateMutationFactors = function(chance, rate) {
 	return this._orgGenome.mutateMutationFactors(chance, rate);
 }
 
-Organism.prototype.UpdateState = function() {
+Organism.prototype.updateState = function() {
 	var prob = [];
 
 	for (var i=0, l=this._stateCount; i<l; i++) {
@@ -737,8 +768,9 @@ Organism.prototype.UpdateState = function() {
 	}
 
 	// Normalize probability:
-	for (var i=0, l=this._stateCount; i<l; i++)
+	for (var i=0, l=this._stateCount; i<l; i++) {
 		prob[i] /= totalProb;
+	}
 
 	// cdf - cumulative distribution function
 	for (var i=this._stateCount - 1; i >= 0; i--) {
@@ -842,10 +874,12 @@ Organism.Sensor.prototype.load = function(fstream) {
 }
 
 // --------------------------------------------------------------------------
-exports.GA={};
+
+exports.GA = GA;
 exports.GA.Gene = Gene;
 exports.GA.Chromosome = Chromosome;
 exports.GA.Genome = Genome;
+
 exports.Org={};
 exports.Org.Organism = Organism;
 exports.Org.Organism.State = Organism.State;
