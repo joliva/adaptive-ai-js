@@ -33,6 +33,11 @@ function update(i, outFlag) {
 
 	if (i%100 === 99) {
 		gen += 1;
+
+		for (var j=0;j<10;j++) {
+			var org = orgs[j]
+			org.mutate();
+		}
 	}
 
 	var ostring = 'gen['+(gen+1)+']: ';
@@ -49,7 +54,6 @@ function update(i, outFlag) {
 		var idx = org.getCurrentState();
 	
 		org.updateState();
-		org.mutate();
 
 		if (outFlag === true)
 			ostring += organism.getStateName(idx) + '\t';
@@ -57,31 +61,6 @@ function update(i, outFlag) {
 
 	if (outFlag === true)
 		console.log(ostring);
-}
-
-/*
-var genome = new aai.Genome();
-genome.setChromosomeCount(4);		// 4 states
-
-for (var i=0; i<genome.getChromosomeCount(); i++) {
-	var chrom = genome.getChromosome(i);
-	chrom.setGeneCount(4);			// 4 transition states
-
-	for (var j=0; j<chrom.getGeneCount(); j++) {
-		var gene = chrom.getGene(j);
-		gene.setLength(8);			// 7 sensor values (N-1)
-		gene.setMutationChance(0.5);
-	}
-}
-
-for (var i=0; i<8; i++) {
-	console.log('Generation ' + (i+1) + ':');
-	printGenome(genome);
-	genome.mutate();
-}
-*/
-
-function printState(genome) {
 }
 
 function printGenome(genome) {
